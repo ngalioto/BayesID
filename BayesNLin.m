@@ -1,4 +1,4 @@
-function [samples, accRatio] = BayesNLin(y, theta, propC, M, m0, Sigma0, f, h, Q, R, logprior, n0, gamma, eps)
+function [samples, accRatio, propC] = BayesNLin(y, theta, propC, M, m0, Sigma0, f, h, Q, R, logprior, n0, gamma, eps)
     % [samples, accRatio] = BayesNLin(y, theta, propC, M, m0, Sigma0, f, h, Q, R, logprior, n0, gamma, eps);
     % [samples, accRatio] = BayesNLin(y, theta, propC, M, m0, Sigma0, f, h, Q, R, logprior);
     % Nick Galioto. University of Michigan.  Dec. 20, 2019
@@ -57,6 +57,8 @@ function [samples, accRatio] = BayesNLin(y, theta, propC, M, m0, Sigma0, f, h, Q
     %
     %       accRatio    Acceptance ratio.  Percentage of samples that get
     %                   accepted.
+    %
+    %       propC       Proposal covariance at the end of sampling.
     
     
     alpha = 1e-3;

@@ -1,4 +1,4 @@
-function [samples, accRatio] = BayesLin(y, theta, propC, M, m0, Sigma0, A, H, Q, R, logprior, n0, gamma, eps)    
+function [samples, accRatio, propC] = BayesLin(y, theta, propC, M, m0, Sigma0, A, H, Q, R, logprior, n0, gamma, eps)    
     % [samples, accRatio] = BayesLin(y, theta, propC, M, m0, Sigma0, A, H, Q, R, logprior, n0, gamma, eps);
     % [samples, accRatio] = BayesLin(y, theta, propC, M, m0, Sigma0, A, H, Q, R, logprior);
     % Nick Galioto. University of Michigan.  Dec. 20, 2019
@@ -53,6 +53,8 @@ function [samples, accRatio] = BayesLin(y, theta, propC, M, m0, Sigma0, A, H, Q,
     %
     %       accRatio    Acceptance ratio.  Percentage of samples that get
     %                   accepted.
+    %
+    %       propC       Proposal covariance at the end of sampling.
     
 
     % default parameters for DRAM
@@ -74,10 +76,11 @@ function [samples, accRatio] = BayesLin(y, theta, propC, M, m0, Sigma0, A, H, Q,
     theta_mean = theta;
     theta_sd = 2.4^2 / p;
     propC = theta_sd*propC;
-    logpost_eval = @(theta)PMlogpost(theta, m0, Sigma0, A(theta), H(theta), Q(theta), R(theta), y, logprior(theta));
+    logpost_eval = @(theta)PMlogpost(m0, Sigma0, A(theta), H(theta), Q(theta), R(theta), y, logprior(theta));
     logpost = logpost_eval(theta);
     
     % Begin sampling
+    fprintf(1,'Computation Progress:%3.0f%%\n',100/M);
     for i = 2:M      
         [theta_mean, propC] = AdaptiveCov(theta, theta_mean, propC, p, i-1, n0, theta_sd, eps);
         if (det(propC) <= 0)
@@ -86,8 +89,10 @@ function [samples, accRatio] = BayesLin(y, theta, propC, M, m0, Sigma0, A, H, Q,
         [theta, acc,logpost] = DelayedRej(theta, propC, logpost_eval, gamma, logpost);
         samples(:,i) = theta;
         numacc = numacc + acc;
+        fprintf(1,'\b\b\b\b%3.0f%%',100*i/M);% Deleting 4 characters (The three digits and the % symbol)
     end
     accRatio = numacc / M;
+    fprintf('\n');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
