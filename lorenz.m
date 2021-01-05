@@ -90,6 +90,8 @@ function xdot = Lorenz(x, p)
 end
 
 function plotResults(t, f, x0, x, tdata, y, xpost)
+    plottingPreferences();
+
     n = length(x0);
     T = length(t);
     N = size(xpost, 3);
@@ -103,8 +105,8 @@ function plotResults(t, f, x0, x, tdata, y, xpost)
     upper = [quantl, fliplr(quantu)];
 
     postColor = [0.3010 0.7450 0.9330];
-    modeColor = [0.8510 0.3725 0.0078];
-    truthColor = [0.9059 0.1608 0.5412];
+    modeColor = 'b';
+    truthColor = 'k';
     for i = 1:n
         figure
         post = fill(lower, upper(i,:), postColor, 'FaceAlpha', 0.05);
