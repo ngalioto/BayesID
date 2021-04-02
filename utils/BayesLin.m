@@ -76,7 +76,7 @@ function [samples, accRatio, propC] = BayesLin(y, theta, propC, M, m0, Sigma0, A
     theta_mean = theta;
     theta_sd = 2.4^2 / p;
     propC = theta_sd*propC;
-    logpost_eval = @(theta)PMlogpost(m0, Sigma0, A(theta), H(theta), Q(theta), R(theta), y, logprior(theta));
+    logpost_eval = @(theta)PMlogpost(m0, Sigma0, A(theta), H(theta), Q(theta), R(theta), y, logprior(theta),eye(size(y,1)));
     logpost = logpost_eval(theta);
     
     % Begin sampling
@@ -98,59 +98,57 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Computes the log posterior using the pseudo-marginal algorithm.
-function logpost = PMlogpost(m, C, A, H, Sigma, Gamma, y, logprior)
-    [d,T] = size(y);
+function logpost = PMlogpost(m, C, A, H, Sigma, Gamma, y, logprior,I)
+    T = size(y,2);
     
     logpost = logprior;
     for i = 1:T
         m = A*m;
         C = A*C*A' + Sigma;
         
+        HC = H*C;
         mu = H*m;
-        S = H*C*H' + Gamma;
+        v = y(:,i) - mu;
+        S = HC*H' + Gamma;
+        Sinv = I / S;
         
-        logpost = logpost - 0.5*log(det(S)) - 0.5*d*log(2*pi) -  ...
-            0.5*((y(:,i)-mu)'/S*(y(:,i)-mu));
+        logpost = logpost - 0.5*log(det(S)) - 0.5*v'*Sinv*v;
         
-        K = C*H' / S;
-        m = m + K *(y(:,i)-H*m);
-        C = C - K*H*C;
+        K = C*H' * Sinv;
+        m = m + K*v;
+        C = C - K*HC;
     end
 end
 
 % Delayed rejection algorithm.  See Haario 2006.
 function [xout, acc, logpost] = DelayedRej(xin, propC, post_eval, gamma, fx)
     acc = 0;
-    y1 = mvnrnd(xin, propC)';
-
+    
     if (nargin == 4)
         fx = post_eval(xin);
     end
     logpost = fx;
-    fy1 = post_eval(y1);
-    qx_y1 = log(mvnpdf(xin, y1, propC));
-    qy1_x = log(mvnpdf(y1, xin, propC));
     
-    N1 = fy1 + qx_y1;
-    D1 = fx + qy1_x;
-    alphay1_x = N1 - D1; % acceptance probability
+	y1 = mvnrnd(xin, propC)';
+    fy1 = post_eval(y1);
+    
+    alphay1_x = fy1 - fx; % acceptance probability
     if (log(rand) < alphay1_x)  % acceptance
         xout = y1;
         acc = 1;
         logpost = fy1;
     else                        % 1st rejection
         y2 = mvnrnd(xin, gamma*propC)';
-        
         fy2 = post_eval(y2);
+        
+        qx_y1 = log(mvnpdf(xin, y1, propC));
         q1y1_y2 = log(mvnpdf(y1, y2, propC));
-        q1y2_y1 = log(mvnpdf(y2, y1, propC));
-        q2y2_x = log(mvnpdf(y2, xin, gamma*propC));
-        q2x_y2 = log(mvnpdf(xin, y2, gamma*propC));
         
-        alphay1_y2 = (fy1 + q1y2_y1) - (fy2 + q1y1_y2);
-        N2 = fy2 + q1y1_y2 + q2x_y2 + log(1 - exp(alphay1_y2));
+        alphay1_y2 = fy1 - fy2;
+        N2 = fy2 + q1y1_y2 + log(1-exp(alphay1_y2));
+        D2 = fy1 + qx_y1 + log(1-exp(alphay1_x));
         
-        alpha2 = N2 - (q2y2_x + log(exp(D1)-exp(N1))); % accetance probability
+        alpha2 = N2 - D2; % accetance probability
         if (log(rand) < alpha2) % acceptance
             xout = y2;
             acc = 1;

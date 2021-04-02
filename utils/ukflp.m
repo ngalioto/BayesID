@@ -1,5 +1,5 @@
 function logpost = ukflp(theta, m, C, f, h, Sigma, Gamma, y, prior,alpha,beta,kappa,eps)
-    [d,T] = size(y);
+    T = size(y,2);
     n = size(m,1);
     logpost = prior(theta);
     if (isfinite(logpost))
@@ -13,13 +13,12 @@ function logpost = ukflp(theta, m, C, f, h, Sigma, Gamma, y, prior,alpha,beta,ka
                 logpost = -Inf;
                 break;
             end
-            [m,C,mu,S,err] = ukfUpdate(m, C, y(:,i), Gamma, n, h, lambda, Wm, Wc, eps);
+            [m,C,v,S,Sinv,err] = ukfUpdate(m, C, y(:,i), Gamma, n, h, lambda, Wm, Wc, eps);
             if (err ~= 0)
                 logpost = -Inf;
                 break;
             end
-            logpost = logpost - 0.5*log(det(S)) - 0.5*d*log(2*pi) -  ...
-                0.5*(y(:,i)-mu)'/S*(y(:,i)-mu);
+            logpost = logpost - 0.5*log(det(S)) - 0.5*v'*Sinv*v;
         end
     end
 end

@@ -111,7 +111,7 @@ end
 % the covariance matrix becomes not positive definite within the filter,
 % the function halts and returns -Inf for the log posterior
 function logpost = PMlogpost(m, C, f, h, Sigma, Gamma, y, logprior,alpha,beta,kappa,eps)
-    [d,T] = size(y);
+    T = size(y,2);
     n = size(m,1);
     logpost = logprior;
     if (isfinite(logpost))  % can immediately reject if logprior is -Inf
@@ -124,13 +124,12 @@ function logpost = PMlogpost(m, C, f, h, Sigma, Gamma, y, logprior,alpha,beta,ka
                 logpost = -Inf;
                 break;
             end
-            [m,C,mu,S,err] = UKFupdate(m, C, y(:,i), Gamma, n, h, lambda, Wm, Wc, eps);
+            [m,C,v,S,Sinv,err] = UKFupdate(m, C, y(:,i), Gamma, n, h, lambda, Wm, Wc, eps);
             if (err ~= 0)
                 logpost = -Inf;
                 break;
             end
-            logpost = logpost - 0.5*log(det(S)) - 0.5*d*log(2*pi) -  ...
-                0.5*((y(:,i)-mu)'/S*(y(:,i)-mu));
+            logpost = logpost - 0.5*log(det(S)) - 0.5*v'*Sinv*v;
         end
     end
 end
@@ -157,7 +156,7 @@ end
 % Performs the update step of the unscented Kalman filter.  If the
 % covariance matrix is not positive definite, the function halts and
 % returns a 1 in the 'err' variable
-function [xout, Pout,mu,S,err] = UKFupdate(xin, Pin, y, R, n, h, lambda,Wm,Wc,eps)
+function [xout, Pout,v,S,Sinv,err] = UKFupdate(xin, Pin, y, R, n, h, lambda,Wm,Wc,eps)
     m = size(y, 1);
     [X,err] = form_sigma_points(xin, Pin, n, lambda);
     if (err == 0)
@@ -170,14 +169,17 @@ function [xout, Pout,mu,S,err] = UKFupdate(xin, Pin, y, R, n, h, lambda,Wm,Wc,ep
         S = Wc .* (Yhat - mu)*(Yhat - mu)' + R + eps*eye(m);
         C = Wc .* (X - xin)*(Yhat - mu)';
 
-        K = C/S;
-        xout = xin + K * (y - mu);
+        v = y - mu;
+        Sinv = eye(m) / S;
+        K = C*Sinv;
+        xout = xin + K*v;
         Pout = Pin - K*S*K' + eps*eye(n);
     else
         xout = xin;
         Pout = Pin;
-        mu = 0;
+        v = 0;
         S = 0;
+        Sinv = 0;
     end
 end
 
@@ -212,36 +214,32 @@ end
 % Delayed rejection algorithm.  See Haario 2006.
 function [xout, acc, logpost] = DelayedRej(xin, propC, post_eval, gamma, fx)
     acc = 0;
-    y1 = mvnrnd(xin, propC)';
-
+    
     if (nargin == 4)
         fx = post_eval(xin);
     end
     logpost = fx;
-    fy1 = post_eval(y1);
-    qx_y1 = log(mvnpdf(xin, y1, propC));
-    qy1_x = log(mvnpdf(y1, xin, propC));
     
-    N1 = fy1 + qx_y1;
-    D1 = fx + qy1_x;
-    alphay1_x = N1 - D1; % acceptance probability
+	y1 = mvnrnd(xin, propC)';
+    fy1 = post_eval(y1);
+    
+    alphay1_x = fy1 - fx; % acceptance probability
     if (log(rand) < alphay1_x)  % acceptance
         xout = y1;
         acc = 1;
         logpost = fy1;
     else                        % 1st rejection
         y2 = mvnrnd(xin, gamma*propC)';
-        
         fy2 = post_eval(y2);
+        
+        qx_y1 = log(mvnpdf(xin, y1, propC));
         q1y1_y2 = log(mvnpdf(y1, y2, propC));
-        q1y2_y1 = log(mvnpdf(y2, y1, propC));
-        q2y2_x = log(mvnpdf(y2, xin, gamma*propC));
-        q2x_y2 = log(mvnpdf(xin, y2, gamma*propC));
         
-        alphay1_y2 = (fy1 + q1y2_y1) - (fy2 + q1y1_y2);
-        N2 = fy2 + q1y1_y2 + q2x_y2 + log(1 - exp(alphay1_y2));
+        alphay1_y2 = fy1 - fy2;
+        N2 = fy2 + q1y1_y2 + log(1-exp(alphay1_y2));
+        D2 = fy1 + qx_y1 + log(1-exp(alphay1_x));
         
-        alpha2 = N2 - (q2y2_x + log(exp(D1)-exp(N1))); % accetance probability
+        alpha2 = N2 - D2; % accetance probability
         if (log(rand) < alpha2) % acceptance
             xout = y2;
             acc = 1;

@@ -1,4 +1,4 @@
-clear all; close all;
+clear; close all;
 addpath('utils');
 rng(1);
 
@@ -44,7 +44,7 @@ logprior = @(theta)log(rhnpdf(theta(pdyn+1:end),zeros(pvar,1),eye(pvar))) - ...
 
 % Optimization
 objective = @(theta)-kflp(theta, x0, P0, F(theta), H(theta), ...
-    Q(theta), R(theta), y, logprior);
+    Q(theta), R(theta), y, logprior, eye(m));
 theta_init = [zeros(pdyn,1); 0.1*ones(pvar,1)]; %anywhere where objective is defined
 options = optimoptions('fmincon', 'MaxIterations', 100);
 [theta0,~,~,~,~,~,~] = fmincon(objective, theta_init, [],[],[],[],...
