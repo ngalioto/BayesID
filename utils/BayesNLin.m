@@ -237,7 +237,7 @@ function [xout, acc, logpost] = DelayedRej(xin, propC, post_eval, gamma, fx)
         
         alphay1_y2 = fy1 - fy2;
         N2 = fy2 + q1y1_y2 + log(1-exp(alphay1_y2));
-        D2 = fy1 + qx_y1 + log(1-exp(alphay1_x));
+        D2 = fx + qx_y1 + log(1-exp(alphay1_x));
         
         alpha2 = N2 - D2; % accetance probability
         if (log(rand) < alpha2) % acceptance
