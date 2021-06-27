@@ -223,7 +223,7 @@ function [xout, acc, logpost] = DelayedRej(xin, propC, post_eval, gamma, fx)
 	y1 = mvnrnd(xin, propC)';
     fy1 = post_eval(y1);
     
-    alphay1_x = fy1 - fx; % acceptance probability
+    alphay1_x = min(fy1 - fx, 0); % acceptance probability
     if (log(rand) < alphay1_x)  % acceptance
         xout = y1;
         acc = 1;
@@ -235,7 +235,7 @@ function [xout, acc, logpost] = DelayedRej(xin, propC, post_eval, gamma, fx)
         qx_y1 = log(mvnpdf(xin, y1, propC));
         q1y1_y2 = log(mvnpdf(y1, y2, propC));
         
-        alphay1_y2 = fy1 - fy2;
+        alphay1_y2 = min(fy1 - fy2, 0);
         N2 = fy2 + q1y1_y2 + log(1-exp(alphay1_y2));
         D2 = fx + qx_y1 + log(1-exp(alphay1_x));
         
