@@ -4,7 +4,6 @@ addpath(genpath('../../logposterior'));
 addpath(genpath('../../nlogposterior'));
 addpath(genpath('../../filtering'));
 addpath(genpath('../../sampling'));
-rng(1);
 
 % Time parameters
 tf = 4;
@@ -35,24 +34,17 @@ pend = @(x)Acon*x;
 % pend = @(x)[x(2); -g/L*sin(x(1))]; % nonlinear pendulum
 
 % Generate data
-sigmaR = 0.1;
+sigmaR = 0.01;
 y = generateData(@(x)pend(x), x0true, t, H(ptrue).val, sigmaR);
-
-% Sampling parameters
-num_samp = 1e3;
 
 %%
 % Log of the prior distribution
 lambda = 0.1; %sparsity knob
-nlogprior = @(theta)formPrior(theta,pdyn+1:ptot);
-% logprior = @(theta)log(rhnpdf(theta(pdyn+1:end),zeros(pvar,1),eye(pvar))) - ...
-%     lambda*norm(theta(1:pdynd),1);
+nlogprior = @(theta)formPrior(theta,1:pdyn,pdyn+1:ptot);
 
 % Optimization
 objective = @(theta)nlpLinear(1:ptot, x0(theta), P0(theta), A(theta), [], ...
     H(theta), [], Q(theta), R(theta), [], y, nlogprior(theta));
-% objective = @(theta)-kflp(theta, x0, P0, A(theta), H(theta), ...
-%     Q(theta), R(theta), y, logprior, eye(m));
 theta_init = [zeros(pdyn,1); 0.1*ones(ptot-pdyn,1)]; %anywhere where objective is defined
 options = optimoptions('fmincon', 'SpecifyObjectiveGradient', true, 'Display', 'Iter');
 [theta0,~,~,~,~,~,hessian] = fmincon(objective, theta_init, [],[],[],[],...
@@ -62,38 +54,38 @@ options = optimoptions('fmincon', 'SpecifyObjectiveGradient', true, 'Display', '
 C0 = conditionHess(hessian);
 
 %% Sample from posterior
+num_samp = 1e3;
 evalLogPost = @(theta)lpLinear(x0(theta).val, P0(theta).val, A(theta).val, [], ...
     H(theta).val, [], Q(theta).val, R(theta).val, [], y, -nlogprior(theta).val);
 [samples, acc] = DRAM(theta0,C0,num_samp,evalLogPost);
-% [samples, acc] = BayesLin(y, theta0, propC, num_samp, x0, P0,...
-%     A, H, Q, R, logprior);
 
 %%
-[t_fine, x] = ode45(@(t,x)pend(x), 0:dt_fine:2*tf, x0);
+[t_fine, x] = ode45(@(t,x)pend(x), 0:dt_fine:2*tf, x0true);
 x = x';
 
-Acon = @(theta)logm(A(theta)) / dt;
+Acon = @(theta)logm(A(theta).val) / dt;
 N = 100;
 ind = num_samp / N;
 xpost = zeros(n,length(t_fine),N);
 for i = 1:N
-    [~, xhat] = ode45(@(t,x)Acon(samples(:,i*ind))*x, t_fine, x0);
+    [~, xhat] = ode45(@(t,x)Acon(samples(:,i*ind))*x, t_fine, x0true);
     xpost(:,:,i) = xhat';
 end
 
 %%
 close all;
-plotResults(t_fine, x0, x, t(2:end), y, xpost);
+plotResults(t_fine, x0true, x, t(2:end), y, xpost);
 
 
-function nlp = formPrior(theta,indVar)
+function nlp = formPrior(theta,indDyn,indVar)
     pvar = theta(indVar);
     if (any(pvar < 0))
         nlp.val = Inf;
         nlp.grad = NaN*ones(length(theta),1);
     else
-        nlp.val = 0.5*(pvar'*pvar);
+        nlp.val = 0.5*(pvar'*pvar) + 0.1*norm(theta(indDyn),1);
         nlp.grad = zeros(length(theta),1);
+        nlp.grad(indDyn) = 0.1*sign(theta(indDyn));
         nlp.grad(indVar) = pvar;
     end
 end
@@ -136,18 +128,13 @@ function plotResults(t,x0, x, tdata, y, xpost)
     end
 end
 
-function propC = conditionHess(hessian)
-    n = size(hessian,1);
-    for i = 1:n^2
-        if (isnan(hessian(i)))
-            hessian(i) = 1e10;
-        elseif hessian(i) == 0
-            hessian(i) = 1e-8;
-        end
-    end
-    i = -16;
-    while (sum(eig(inv(hessian) + 10^i*eye(n)) <= 0) > 0)
-        i = i + 1;
-    end
-    propC = inv(hessian) + 10^i*eye(n);
+function plottingPreferences()
+    N = 16;
+    set(0,'DefaultLineLineWidth',2)
+    
+    set(0,'defaultAxesFontSize',N)
+    set(0, 'defaultLegendFontSize', N)
+    set(0, 'defaultColorbarFontSize', N);
+    
+    set(0,'defaulttextinterpreter','latex')
 end

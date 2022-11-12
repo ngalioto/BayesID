@@ -46,7 +46,7 @@ num_samp = 2e5; %number of samples
 
 %%
 % The discrete time dynamics (\Psi in the paper)
-f = @(x,theta)propf(x,@(x)(poolData(x',n,polyorder,usesine)*...
+f = @(x,theta)fwdEuler(x,@(x)(poolData(x',n,polyorder,usesine)*...
     reshape(theta(1:end-pvar), [pdyn/n,n]))',dt/DT,DT);
 
 % Log of the prior distribution

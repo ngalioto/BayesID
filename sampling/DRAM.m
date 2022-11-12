@@ -22,7 +22,7 @@ function [samples,accR,propC] = DRAM(theta,propC,M,evalLogPost,n0,gamma,epsilon)
     logpost = evalLogPost(theta);
     numacc = 0;
     fprintf(1,'Computation Progress:%3.0f%%\n',100/M);
-    printPercent = 1;
+    printPercent = 10;
     next_percent = printPercent;
     for i = 2:M      
         [theta, acc,logpost] = DelayedRej(theta, sqrtC, evalLogPost, gamma, logpost);

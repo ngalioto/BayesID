@@ -1,6 +1,6 @@
 % evaluates positive log-posterior
 % nonlinear dynamics model; linear observation model
-function lp = lpNLDyn(m, P, f, H, D, Q, R, u, y, lp, Wm, Wc, lambda)
+function lp = lpNLDyn(m, P, f, H, D, Q, R, u, y, lp, lambda, Wm, Wc)
 %     addpath('C:/Users/Nick/Documents/MATLAB/nickfiltering/BayesianID/filtering')
     % check the log-prior is real-valued number
     if (isnan(lp) || ~isreal(lp))

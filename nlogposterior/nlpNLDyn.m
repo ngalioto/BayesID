@@ -1,6 +1,6 @@
 % evaluates negative log-posterior and desired gradients
 % nonlinear dynamics model; linear observation model
-function [fval, grad] = nlpNLDyn(idx, m, P, f, H, D, Q, R, u, y, nlp,lambda,Wm,Wc)
+function [fval, grad] = nlpNLDyn(idx, m, P, f, H, D, Q, R, u, y, nlp, lambda, Wm, Wc)
     p = length(idx); 
     % check the log-prior is real-valued number
     if (isnan(nlp.val) || ~isreal(nlp.val))

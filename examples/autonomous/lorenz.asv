@@ -1,9 +1,12 @@
 clear; close all;
-addpath('../../utils');
-addpath(genpath('../../logposterior'));
-addpath(genpath('../../nlogposterior'));
-addpath(genpath('../../filtering'));
-addpath(genpath('../../sampling'));
+addpath('utils'); addpath('utils/ukf');
+rng(1);
+
+% UKF parameters
+alpha = 1e-3;
+beta = 2;
+kappa = 0;
+eps = 1e-10;
 
 % Lorenz system
 ptrue = [10; 8/3; 28];
@@ -24,52 +27,45 @@ n = 3;
 m = 3;
 pdyn = 3; %number of dynamics parameters
 pvar = 4; %number of variance parameters
-ptot = pdyn+pvar;
 x0true = [2.0181; 3.5065; 11.8044];
-P0true = 1e-16*eye(n); %must be non-zero for UKF
+P0true = 1e-16*eye(n); %kn
+x0 = readStructure(x0true,false(n,1),[],ptot);
+P0 = readStructure(P0true,false(n),[],ptot); %must be non-zero for UKF
+H = readStructure(eye(n),false(n),[],ptot);
+Q = readStructure(zeros(n),diag(true(n,1)),indQ,ptot);
+R = readStructure(zeros(m),diag(true(m,1)),indR,ptot);
 
-indQ = pdyn+1:pdyn+3; indR = ptot;
-x0 = readStructure(x0true,false(n,1),[]); %fixed
-P0 = readStructure(P0true,false(n),[]); %fixed
-f = @(x,theta)fwdEuler(x,@(x)Lorenz(x,theta),dt/DT,DT); %learnable (\Psi in the paper)
-H = readStructure(eye(n),false(n),[]); %fixed
-Q = readStructure(zeros(n),diag(true(n,1)),indQ); %learnable
-R = readStructure(zeros(m),diag(true(m,1)),indR); %learnable
-
-% Generate data
+% Measurement model
 sigmaR = 2;
-y = generateData(@(x)Lorenz(x,ptrue), x0true, t, H(ptrue).val, sigmaR);
+y = generateData(@(x)Lorenz(x,ptrue), x0true, t, H, sigmaR);
 
-% UKF parameters
-alpha = 1e-3;
-beta = 2;
-kappa = 0;
-eps = 1e-10;
-lambda = alpha^2 * (n+kappa) - n;
-[Wm, Wc] = formWeights(n, lambda, alpha, beta);
+% Sampling parameters
+num_samp = 1e4; %number of samples
 
 %%
+% The discrete time dynamics (\Psi in the paper)
+f = @(x,theta)propf(x,@(x)Lorenz(x,theta),dt/DT,DT);
+
 % Log of the prior distribution
-logprior = @(theta)formPrior(theta,pdyn+1:ptot);
+logprior = @(theta)log(rhnpdf(theta(pdyn+1:end),zeros(pvar,1),eye(pvar)));
 
 % Optimization
-objective = @(theta)-lpNLDyn(x0(theta).val, P0(theta).val, ...
-    @(x)f(x,theta), H(theta).val, [], Q(theta).val, R(theta).val, [], y, ...
-    logprior(theta).val, lambda, Wm, Wc);
+objective = @(theta)-ukflp(theta, x0true, P0, @(x)f(x,theta), h, ...
+    Q(theta), R(theta), y, logprior,alpha,beta,kappa,eps);
 theta_init = [zeros(pdyn,1); 0.1*ones(pvar,1)]; %anywhere where objective is defined
-options = optimoptions('fmincon', 'Display', 'Iter');
-[theta0,~,~,~,~,~,hessian] = fmincon(objective, theta_init, [],[],[],[],...
+options = optimoptions('fmincon', 'MaxIterations', 100);
+[theta0,~,~,~,~,~,~] = fmincon(objective, theta_init, [],[],[],[],...
     [-Inf*ones(pdyn,1);zeros(pvar,1)],[], [],options);
 
+% Compute the Hessian
+[theta0, ~,~,~,~, hessian] = fminunc(objective, theta0);
+
 % Condition Hessian to ensure positive definiteness
-C0 = conditionHess(hessian);
+propC = condHess(hessian);
 
 %% Sample from posterior
-num_samp = 1e4; %number of samples
-evalLogPost = @(theta)lpNLDyn(x0(theta).val, P0(theta).val, @(x)f(x,theta),...
-    H(theta).val, [], Q(theta).val, R(theta).val, [], y,...
-    logprior(theta).val, lambda, Wm, Wc);
-[samples, acc] = DRAM(theta0,C0,num_samp,evalLogPost);
+[samples, acc] = BayesNLin(y, theta0, propC, num_samp, x0true, P0,...
+    f, h, Q, R, logprior);
 
 %%
 [t_fine, x] = ode45(@(t,x)Lorenz(x,ptrue), 0:dt_fine:2*tf, x0true);
@@ -92,18 +88,6 @@ function xdot = Lorenz(x, p)
     xdot(1,1) = p(1)*(x(2) - x(1));
     xdot(2,1) = x(1)*(p(3) - x(3)) - x(2);
     xdot(3,1) = x(1)*x(2) - p(2)*x(3);
-end
-
-function lp = formPrior(theta,indVar)
-    pvar = theta(indVar);
-    if (any(pvar < 0))
-        lp.val = -Inf;
-        lp.grad = NaN*ones(length(theta),1);
-    else
-        lp.val = -0.5*(pvar'*pvar);
-        lp.grad = zeros(length(theta),1);
-        lp.grad(indVar) = -pvar;
-    end
 end
 
 function plotResults(t, f, x0, x, tdata, y, xpost)
@@ -161,15 +145,4 @@ function plotResults(t, f, x0, x, tdata, y, xpost)
     view(47.6151, 10.1341)
     xlabel('$x$');ylabel('$y$');zlabel('$z$');
     title('Truth')
-end
-
-function plottingPreferences()
-    N = 16;
-    set(0,'DefaultLineLineWidth',2)
-    
-    set(0,'defaultAxesFontSize',N)
-    set(0, 'defaultLegendFontSize', N)
-    set(0, 'defaultColorbarFontSize', N);
-    
-    set(0,'defaulttextinterpreter','latex')
 end
