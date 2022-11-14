@@ -4,6 +4,8 @@ addpath(genpath('../../logposterior'));
 addpath(genpath('../../nlogposterior'));
 addpath(genpath('../../filtering'));
 addpath(genpath('../../sampling'));
+warning('off','MATLAB:illConditionedMatrix');
+warning('off','MATLAB:nearlySingularMatrix');
 
 % Lorenz system
 ptrue = [10; 8/3; 28];
@@ -27,24 +29,25 @@ pvar = 4; %number of variance parameters
 ptot = pdyn+pvar;
 x0true = [2.0181; 3.5065; 11.8044];
 P0true = 1e-16*eye(n); %must be non-zero for UKF
+Htrue = eye(n);
 
-indQ = pdyn+1:pdyn+3; indR = ptot;
+indQ = pdyn+1:pdyn+n; indR = ptot;
 x0 = readStructure(x0true,false(n,1),[]); %fixed
 P0 = readStructure(P0true,false(n),[]); %fixed
 f = @(x,theta)fwdEuler(x,@(x)Lorenz(x,theta),dt/DT,DT); %learnable (\Psi in the paper)
-H = readStructure(eye(n),false(n),[]); %fixed
+H = readStructure(Htrue,false(n),[]); %fixed
 Q = readStructure(zeros(n),diag(true(n,1)),indQ); %learnable
 R = readStructure(zeros(m),diag(true(m,1)),indR); %learnable
 
 % Generate data
 sigmaR = 2;
-y = generateData(@(x)Lorenz(x,ptrue), x0true, t, H(ptrue).val, sigmaR);
+y = generateData(@(x)Lorenz(x,ptrue), x0true, t, Htrue, sigmaR);
 
 % UKF parameters
 alpha = 1e-3;
 beta = 2;
 kappa = 0;
-eps = 1e-10;
+epsilon = 1e-10;
 lambda = alpha^2 * (n+kappa) - n;
 [Wm, Wc] = formWeights(n, lambda, alpha, beta);
 

@@ -73,7 +73,7 @@ options = optimoptions('fmincon', 'Display', 'Iter');
 C0 = conditionHess(hessian);
 
 %% Sample from posterior
-num_samp = 2e5; %number of samples
+num_samp = 1e4; %number of samples
 evalLogPost = @(theta)lpNLDyn(x0(theta).val, P0(theta).val, @(x)f(x,theta),...
     H(theta).val, [], Q(theta).val, R(theta).val, [], y,...
     logprior(theta).val, lambda, Wm, Wc);
@@ -83,21 +83,19 @@ evalLogPost = @(theta)lpNLDyn(x0(theta).val, P0(theta).val, @(x)f(x,theta),...
 [t_fine, x] = ode45(@(t,x)van(x), 0:dt_fine:2*tf, x0true);
 x = x';
 
-burn_in = 5e4;
+burn_in = 1e3;
 xdot = @(x,theta)(poolData(x',n,polyorder,usesine)*reshape(theta(1:pdyn), [pdyn/n,n]))';
 N = 100;
 ind = burn_in / N;
 xpost = zeros(n,length(t_fine),N);
 for i = 1:N
-    theta = samples(:,i*ind+burn_in);
-    [~, xhat] = ode45(@(t,x)xdot(x,theta), t_fine, x0(theta).val);
+    [~, xhat] = ode45(@(t,x)xdot(x,samples(:,i*ind+burn_in)), t_fine, x0true);
     xpost(:,:,i) = xhat';
 end
-[~, xmap] = ode45(@(t,x)xdot(x,theta0), t_fine, x0(theta0).val);
 
 %%
 close all;
-plotResults(t_fine, x0true, x, t(2:end), y, xpost, xmap);
+plotResults(t_fine, x0true, x, t(2:end), y, xpost);
 
 function lp = formPrior(theta,indDyn,indVar)
     pvar = theta(indVar);
@@ -116,8 +114,13 @@ function plotResults(t,x0, x, tdata, y, xpost, xmap)
     plottingPreferences();
 
     n = length(x0);
+    T = length(t);
     N = size(xpost, 3);
-    
+
+    % Get mode of predictive posterior
+    xhat(:,1) = getMode(tmp1);
+    xhat(:,2) = getMode(tmp2);
+
     quantl = quantile(xpost, 0.025, 3);
     quantu = quantile(xpost, 0.975, 3);
     lower = [t; flipud(t)];
@@ -135,12 +138,12 @@ function plotResults(t,x0, x, tdata, y, xpost, xmap)
             samp = plot(t, xpost(i,:,j), 'Color', postColor);
             samp.Color(4) = 0.05;
         end
-        est = plot(t, xmap(:,i), 'Color', modeColor);
+        est = plot(t, xhat(:,i), 'Color', modeColor);
         hold on
         truth = plot(t, x(i,:),'--', 'Color', truthColor);
         if (i==n)
           legend([post,samp,data,est,truth], 'Posterior', 'Samples',...
-             'Data', 'MAP', 'Truth', 'Location', 'eastoutside');
+             'Data', 'Mode', 'Truth', 'Location', 'eastoutside');
         end
         xlabel('Time (s)')
         ylabel(strcat('$x_',num2str(i),'$'))
@@ -153,9 +156,9 @@ function plotResults(t,x0, x, tdata, y, xpost, xmap)
         post = plot(xpost(1,:,i), xpost(2,:,i), 'Color', postColor);
         post.Color(4) = 0.05;
     end
-    bayes = plot(xmap(:,1), xmap(:,2), 'Color', modeColor);
+    bayes = plot(xhat(:,1), xhat(:,2), 'Color', modeColor);
     truth = plot(x(1,:), x(2,:), '--', 'Color', truthColor);
-    legend([post,bayes,truth],'Posterior', 'MAP', 'True', 'Location', 'best');
+    legend([post,bayes,truth],'Posterior', 'Mode', 'True', 'Location', 'best');
     xlabel('$x_1$')
     ylabel('$x_2$')
 end
