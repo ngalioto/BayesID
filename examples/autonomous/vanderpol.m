@@ -73,7 +73,7 @@ options = optimoptions('fmincon', 'Display', 'Iter');
 C0 = conditionHess(hessian);
 
 %% Sample from posterior
-num_samp = 2e5; %number of samples
+num_samp = 1e5; %number of samples
 evalLogPost = @(theta)lpNLDyn(x0(theta).val, P0(theta).val, @(x)f(x,theta),...
     H(theta).val, [], Q(theta).val, R(theta).val, [], y,...
     logprior(theta).val, lambda, Wm, Wc);
