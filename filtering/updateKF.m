@@ -4,10 +4,11 @@ function [m,P] = updateKF(m,P,C,D,R,y,u)
         v = v - D*u;
     end
     
-    S = C*P*C' + R;
-    Sinv = inv(S);
-    K = P*C'*Sinv;
+
+    PC = P*C';
+    S = C*PC + R;
+    K = PC/S;
 
     m = m + K*v;
-    P = P - K*C*P;
+    P = P - K*PC';
 end
