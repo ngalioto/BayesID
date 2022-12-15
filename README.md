@@ -31,5 +31,5 @@ This folder contains functions for MCMC sampling using the DRAM algorithm.
 This folder contains various helper functions that are used throughout the other folders.
 
 ## Information
-Author: [Nick Galioto](https://scholar.google.com/citations?user=psGSgNoAAAAJ&hl=en&oi=sra)
-Contact: [ngalioto@umich.edu](ngalioto@umich.edu)
+Author: [Nick Galioto](https://scholar.google.com/citations?user=psGSgNoAAAAJ&hl=en&oi=sra)\
+Contact: [ngalioto@umich.edu](mailto:ngalioto@umich.edu)
