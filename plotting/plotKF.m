@@ -6,7 +6,7 @@ end
     n = length(x);
     [m,Tdata] = size(y);
     Tsim = length(t);
-    setText(16,'latex');
+    plotSettings(16,1,'latex');
     xplots = cell(1,n);
     x = [x,zeros(n,Tsim-1)];
     stddev = zeros(n,Tsim);

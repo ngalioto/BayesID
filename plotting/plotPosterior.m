@@ -6,7 +6,7 @@ end
     [~,Tdata] = size(y);
     m = size(C(samples(:,1)).mat,1);
     N = size(samples,2);
-    setText(16,'latex');
+    plotSettings(16,1,'latex');
     yplots = cell(1,m);
     y_mean = zeros(m,size(u,2)+1);
     for i = 1:m

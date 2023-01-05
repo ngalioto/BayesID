@@ -5,7 +5,7 @@ if (nargin < 17)
 end
     [m,Tdata] = size(y);
     N = size(samples,2);
-    setText(16,'latex');
+    plotSettings(16,1,'latex');
     yplots = cell(1,m);
     y_mean = zeros(m,size(u,2)+1); %%
     phase = cell(1,m);

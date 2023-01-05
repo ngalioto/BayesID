@@ -8,7 +8,7 @@ end
     [Wm, Wc, lambda] = formWeights(n, alpha, beta, kappa);
 
     Tsim = length(t);
-    setText(16,'latex');
+    plotSettings(16,1,'latex');
     set(0,'DefaultLineLineWidth',1.5)
     xplots = cell(1,n);
     x = [x,zeros(n,Tsim-1)];

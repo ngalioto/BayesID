@@ -1,6 +1,6 @@
 % evaluates positive log-posterior
 % linear dynamics model; linear observation model
-function lp = lpNLObs(m, P, A, B, h, Q, R, u, y, lp, Wm, Wc, lambda)
+function lp = lpNLObs(m, P, A, B, h, Q, R, u, y, lp, lambda, Wm, Wc)
     addpath('../filtering')
     % check the log-prior is real-valued number
     if (isnan(lp) || ~isreal(lp))

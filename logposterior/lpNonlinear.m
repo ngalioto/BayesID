@@ -1,6 +1,6 @@
 % evaluates positive log-posterior
 % linear dynamics model; linear observation model
-function lp = lpNonlinear(m, P, f, h, Q, R, u, y, lp, Wm, Wc, lambda)
+function lp = lpNonlinear(m, P, f, h, Q, R, u, y, lp, lambda, Wm, Wc)
     % check the log-prior is real-valued number
     if (isnan(lp) || ~isreal(lp))
         lp = -Inf;
