@@ -10,7 +10,7 @@ This repository is designed to contain a number of tools that can be used for Ba
 This folder contains a collection of numerical experiments on autonomous systems that were used in our 2020 paper [Bayesian system id: optimal management of parameter, model, and measurement uncertainty](https://link.springer.com/article/10.1007/s11071-020-05925-8). These examples have been revised since the time of publishing to be compatible with updated, faster implementations of certain algorithms.
 
 #### non-autonomous
-Coming soon. This folder will contain a collection of numerical experiments on non-autonomous systems that are used in an upcoming paper.
+Coming soon. This folder will contain a collection of numerical experiments on non-autonomous systems that are used in a recently submitted [paper](https://arxiv.org/abs/2212.13902).
 
 ### filtering
 This folder contains a collection of functions for evaluating the prediction and update steps of various Bayesian filters. These filters are used within the Bayesian system ID algorithm to evaluate the marginal posterior. The included filters are the Kalman filter and the unscented Kalman filter.
