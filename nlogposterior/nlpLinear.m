@@ -56,8 +56,9 @@ function [fval, grad] = nlpLinear(idx, m, P, A, B, H, D, Q, R, u, y, nlp)
         end
         
         if (i < T)
-            K = getGain(dy,dx,p,P,H,Sinv,ybwd,yfwd);
-            [m,P] = update_grad(dy,dx,p,m,P,K,H,v,xbwd,xfwd);
+            U = getCrossCov(dy,dx,p,P,H,ybwd);
+            K = getGain(dy,dx,p,U,Sinv,ybwd,yfwd);
+            [m,P] = update_grad(dy,dx,p,m,P,U,K,v,xbwd,xfwd);
             
             if (includeB)
                 m = propV(dx,dx,p,m,A,B,u(:,i));

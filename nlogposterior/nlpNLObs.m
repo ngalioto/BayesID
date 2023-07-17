@@ -39,13 +39,14 @@ function [fval, grad] = nlpNLObs(idx, m, P, A, B, h, Q, R, u, y, nlp,lambda,Wm,W
         else
             [v,err,resy,resx] = propV_UKF(dx,p,m,P,h,[],Wm,lambda,xbwd,xfwd);
         end
-        v.vec = y(:,i)-v.vec; v.grad = -v.grad;
+        
         if (err ~= 0)
             fprintf(2,pderror);
             fval = Inf;
             grad = NaN*ones(p,1);
             return;
         end
+        v.val = y(:,i)-v.val; v.grad = -v.grad;
         S = propM_UKF(dy,dy,p,resy,resy,R,Wc,yfwd);
         
         Sinv = getSinv(dy,p,Id,S,ybwd,yfwd);
@@ -62,9 +63,9 @@ function [fval, grad] = nlpNLObs(idx, m, P, A, B, h, Q, R, u, y, nlp,lambda,Wm,W
         end
         
         if (i < T)
-            C = propM_UKF(dx,dy,p,resx,resy,[],Wc,yfwd);
-            K = getGain(dy,dx,p,C,Sinv,ybwd,yfwd);
-            [m,P] = update_grad(dy,dx,p,m,P,S,K,v,xbwd,xfwd);
+            U = propM_UKF(dx,dy,p,resx,resy,[],Wc,yfwd);
+            K = getGain(dy,dx,p,U,Sinv,ybwd,yfwd);
+            [m,P] = update_grad(dy,dx,p,m,P,U,K,v,xbwd,xfwd);
         
             if (includeB)
                 m = propV(dx,dx,p,m,A,B,u(:,i));
