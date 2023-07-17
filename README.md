@@ -25,7 +25,7 @@ This folder contains functions for evaluating the negative log marginal likeliho
 This folder contains a number of functions used for plotting posterior samples and filtering estimates.
 
 ### sampling
-This folder contains functions for MCMC sampling using the DRAM algorithm.
+This folder contains functions for MCMC sampling using the [DRAM](https://link.springer.com/article/10.1007/s11222-006-9438-0) algorithm.
 
 ### utils
 This folder contains various helper functions that are used throughout the other folders.
