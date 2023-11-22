@@ -97,7 +97,7 @@ end
 
 %%
 close all;
-plotResults(t_fine, x0true, x, t(2:end), y, xpost, xmap);
+plotResults(t_fine, x0true, x, t, y, xpost, xmap);
 
 function lp = formPrior(theta,indDyn,indVar)
     pvar = theta(indVar);

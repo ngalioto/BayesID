@@ -88,7 +88,7 @@ end
 
 %%
 close all;
-plotResults(t_fine, @(x)Lorenz(x,theta0),x0true, x, t(2:end), y, xpost);
+plotResults(t_fine, @(x)Lorenz(x,theta0),x0true, x, t, y, xpost);
 
 
 function xdot = Lorenz(x, p)

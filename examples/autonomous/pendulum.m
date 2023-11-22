@@ -74,7 +74,7 @@ end
 
 %%
 close all;
-plotResults(t_fine, x0true, x, t(2:end), y, xpost);
+plotResults(t_fine, x0true, x, t, y, xpost);
 
 
 function nlp = formPrior(theta,indDyn,indVar)
