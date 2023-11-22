@@ -1,17 +1,12 @@
-function [x,C] = update_grad(m,n,ptot,x,C,K,H,v,indbwd,indfwd)
-    HC = H.val*C.val;
-
+function [x,C] = update_grad(m,n,ptot,x,C,U,K,v,indbwd,indfwd)
     gradReshape = -K.val*reshape(v.grad,[m,ptot]);
     x.grad = x.grad + K.grad*v.val - reshape(gradReshape,[n*ptot,1]);
     
-    gradReshape = reshape(H.grad*C.val,[m,n*ptot]);
-    gradReshape = K.val * gradReshape(:,indfwd);
+    gradReshape = reshape(U.grad,[m,n*ptot]);
+    gradReshape = K.val*gradReshape(:,indfwd);
     term1 = reshape(gradReshape(:,indbwd),[n*ptot,n]);
-    gradReshape = reshape(C.grad,[n,n*ptot]);
-    gradReshape = K.val*H.val*gradReshape(:,indfwd);
-    term2 = reshape(gradReshape(:,indbwd),[n*ptot,n]);
-    C.grad = C.grad - K.grad*HC - term1 - term2;
+    C.grad = C.grad - K.grad*U.val' - term1;
     
     x.val = x.val + K.val*v.val;
-	C.val = C.val - K.val*HC;
+	C.val = C.val - K.val*U.val';
 end

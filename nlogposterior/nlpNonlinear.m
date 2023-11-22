@@ -1,6 +1,5 @@
 % evaluates negative log-posterior and desired gradients
 % nonlinear dynamics model; nonlinear observation model
-% THIS DOESN'T WORK YET
 function [fval, grad] = nlpNonlinear(idx, m, P, f, h, Q, R, u, y, nlp,lambda,Wm,Wc)
     p = length(idx); 
     % check the log-prior is real-valued number
@@ -15,7 +14,7 @@ function [fval, grad] = nlpNonlinear(idx, m, P, f, h, Q, R, u, y, nlp,lambda,Wm,
     end
     
     pderror = 'Error: Covariance is no longer positive definite. Evaluation ended early.\n';
-    [dy,T] = size(y); dx = length(m.vec);
+    [dy,T] = size(y); dx = length(m.val);
     [xbwd,xfwd,ybwd,yfwd] = getIndices(p,dx,dy);
     
     x_grad = 1:dx; y_grad = 1:dy;
@@ -42,13 +41,15 @@ function [fval, grad] = nlpNonlinear(idx, m, P, f, h, Q, R, u, y, nlp,lambda,Wm,
         else
             [v,err,resy,resx] = propV_UKF(dx,p,m,P,h,[],Wm,lambda,xbwd,xfwd);
         end
-        v.vec = y(:,i)-v.vec; v.grad = -v.grad;
+
         if (err ~= 0)
             fprintf(2,pderror);
             fval = Inf;
             grad = NaN*ones(p,1);
             return;
         end
+        
+        v.val = y(:,i)-v.val; v.grad = -v.grad;
         S = propM_UKF(dy,dy,p,resy,resy,R,Wc,yfwd);
         
         Sinv = getSinv(dy,p,Id,S,ybwd,yfwd);
@@ -65,9 +66,9 @@ function [fval, grad] = nlpNonlinear(idx, m, P, f, h, Q, R, u, y, nlp,lambda,Wm,
         end
         
         if (i < T)
-            C = propM_UKF(dx,dy,p,resx,resy,[],Wc,yfwd);
-            K = getGain(dy,dx,p,C,Sinv,ybwd,yfwd);
-            [m,P] = update_grad(dy,dx,p,m,P,S,K,v,xbwd,xfwd);
+            U = propM_UKF(dx,dy,p,resx,resy,[],Wc,yfwd);
+            K = getGain(dy,dx,p,U,Sinv,ybwd,yfwd);
+            [m,P] = update_grad(dy,dx,p,m,P,U,K,v,xbwd,xfwd);
         
             if (dynInput)
                 [m,err,resx] = propV_UKF(dx,p,m,P,f,u(:,i),Wm,lambda,xbwd,xfwd);

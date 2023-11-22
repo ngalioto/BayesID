@@ -61,8 +61,9 @@ function [fval, grad] = nlpNLDyn(idx, m, P, f, H, D, Q, R, u, y, nlp, lambda, Wm
         end
         
         if (i < T)
-            K = getGain(dy,dx,p,P,H,Sinv,ybwd,yfwd);
-            [m,P] = update_grad(dy,dx,p,m,P,K,H,v,xbwd,xfwd);
+            U = getCrossCov(dy,dx,p,P,H,ybwd);
+            K = getGain(dy,dx,p,U,Sinv,ybwd,yfwd);
+            [m,P] = update_grad(dy,dx,p,m,P,U,K,v,xbwd,xfwd);
             
             if (dynInput)
                 [m,err,resx] = propV_UKF(dx,p,m,P,f,u(:,i),Wm,lambda,xbwd,xfwd);
