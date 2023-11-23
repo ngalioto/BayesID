@@ -26,9 +26,9 @@ function [fval, grad] = nlpNLDyn(idx, m, P, f, H, D, Q, R, u, y, nlp, lambda, Wm
     Q.grad = Q.grad(x_grad,:); R.grad = R.grad(y_grad,:);
     dynInput = (nargin(f) == 3); includeD = ~isempty(D);
     if (dynInput)
-        f = @(x,u)f(x_grad,x,u);
+        f = @(x,u)f(idx,x,u);
     else
-        f = @(x)f(x_grad,x);
+        f = @(x)f(idx,x);
     end
     if (includeD)
         D.grad = D.grad(y_grad,:);
