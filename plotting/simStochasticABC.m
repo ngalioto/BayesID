@@ -1,6 +1,6 @@
 function yhat = simStochasticABC(x0, P0, A, B, C, Q, R, u, y)
-addpath('C:\Users\Nick\Documents\MATLAB\nickfiltering\BayesianID\filtering');
-
+    addpath('../filtering');
+    
     T_train = size(y,2);
     T_test = size(u,2);
     n = length(x0);

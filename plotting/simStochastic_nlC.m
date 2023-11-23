@@ -1,7 +1,4 @@
 function yhat = simStochastic_nlC(x0, P0, f, C, Q, R, u, y,lambda,Wm,Wc)
-addpath('C:\Users\Nick\Documents\MATLAB\nickfiltering\BayesianID\filtering');
-addpath('C:\Users\Nick\Documents\MATLAB\nickfiltering\Publish\utils\ukf');
-
     T_train = size(y,2);
     T_test = size(u,2);
     n = length(x0);

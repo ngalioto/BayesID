@@ -1,10 +1,10 @@
 function xplots = plotNLDynUKF(x,P,f,C,D,Q,R,y,u,t,alpha,beta,kappa,Color)
-addpath('C:/Users/Nick/Documents/MATLAB/nickfiltering/BayesianID/filtering')
-if (nargin < 14)
-    Color = [0 0.4470 0.7410 0.05];
-end
+    addpath('../filtering');
+    if (nargin < 14)
+        Color = [0 0.4470 0.7410 0.05];
+    end
     n = length(x);
-    [m,Tdata] = size(y);
+    [~,Tdata] = size(y);
     [Wm, Wc, lambda] = formWeights(n, alpha, beta, kappa);
 
     Tsim = length(t);

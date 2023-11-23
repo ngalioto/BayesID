@@ -1,4 +1,4 @@
-function [yplots,lines] = plotPosterior_nl(samples,x0,P0,f,C,Q,R,y,u,t,map,lambda,Wm,Wc,scale,shift,Color)
+function [yplots,lines] = plotPosterior_nl(samples,x0,P0,f,C,Q,R,y,u,t,map,lambda,Wm,Wc,Color)
 if (nargin < 17)
 %     Color = [0 0.4470 0.7410 0.05];
     Color = [0.3010 0.7450 0.9330 0.05];
@@ -17,14 +17,14 @@ end
         hold on;
         phase{i} = figure; hold on;
     end
-    y_mean = simStochastic_nlC(x0(map).vec(:,1),P0(map).mat,...
-            @(x,u)f(x,u,map),C(map).mat,...
-            Q(abs(map)).mat,R(map).mat,u,y,lambda,Wm,Wc);
+    y_mean = simStochastic_nlC(x0(map).val(:,1),P0(map).val,...
+            @(x,u)f(x,u,map),C(map).val,...
+            Q(abs(map)).val,R(map).val,u,y,lambda,Wm,Wc);
     ii = 1;
     for i = 1:N
-        yhat = simStochastic_nlC(x0(samples(:,i)).vec(:,1),P0(samples(:,i)).mat,...
-            @(x,u)f(x,u,samples(:,i)),C(samples(:,i)).mat,...
-            Q(abs(samples(:,i))).mat,R(samples(:,i)).mat,u,y,lambda,Wm,Wc);
+        yhat = simStochastic_nlC(x0(samples(:,i)).val(:,1),P0(samples(:,i)).val,...
+            @(x,u)f(x,u,samples(:,i)),C(samples(:,i)).val,...
+            Q(abs(samples(:,i))).val,R(samples(:,i)).val,u,y,lambda,Wm,Wc);
 %         yhat = scale*yhat + shift;
 %         y_mean = (yhat + (ii-1)*y_mean) ./ ii; %%
         ii = ii+1;

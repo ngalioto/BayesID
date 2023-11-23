@@ -1,8 +1,9 @@
 function xplots = plotKF(x,P,A,B,C,D,Q,R,y,u,t,Color)
-addpath('../filtering')
-if (nargin < 12)
-    Color = [0 0.4470 0.7410 0.05];
-end
+    addpath('../filtering')
+    if (nargin < 12)
+        Color = [0 0.4470 0.7410 0.05];
+    end
+    
     n = length(x);
     [m,Tdata] = size(y);
     Tsim = length(t);
