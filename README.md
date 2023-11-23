@@ -10,7 +10,7 @@ This repository is designed to contain a number of tools that can be used for Ba
 This folder contains a collection of numerical experiments on autonomous systems that were used in our 2020 paper [Bayesian system id: optimal management of parameter, model, and measurement uncertainty](https://link.springer.com/article/10.1007/s11071-020-05925-8). These examples have been revised since the time of publishing to be compatible with updated, faster implementations of certain algorithms.
 
 #### non-autonomous
-This folder contains a collection of numerical experiments on non-autonomous systems that are used in a recently submitted paper titled [Robust identification of non-autonomous dynamical systems using stochastic dynamics models](https://arxiv.org/abs/2212.13902). The results subdirectory contains results that cannot be quickly obtained by the running the example functions.
+This folder contains a collection of numerical experiments on non-autonomous systems that are used in a recently submitted paper titled [Likelihood-based generalization of Markov parameter estimation and multiple shooting objectives in system identification](https://arxiv.org/abs/2212.13902). Some of the scripts in this folder require saved results or datasets that can be accessed [here](https://drive.google.com/drive/folders/1ReKW6OeJDp201IFtisRdjyD_ZxLlt4pG?usp=drive_link).
 
 ### filtering
 This folder contains a collection of functions for evaluating the prediction and update steps of various Bayesian filters. These filters are used within the Bayesian system ID algorithm to evaluate the marginal posterior. The included filters are the Kalman filter, the unscented Kalman filter, the ensemble Kalman filter, and the Gauss-Hermite filter.
@@ -29,6 +29,25 @@ This folder contains functions for MCMC sampling using the [DRAM](https://link.s
 
 ### utils
 This folder contains various helper functions that are used throughout the other folders.
+
+## Citation
+If you found this repository useful, please consider citing it with the following citation:
+
+Galioto, Nicholas, and Alex Arkady Gorodetsky. "Bayesian system ID: optimal management of parameter, model, and measurement uncertainty." Nonlinear Dynamics 102.1 (2020): 241-267.
+
+<b>BibTeX:</b>
+```
+@article{galioto2020bayesian,
+  title={{B}ayesian system {ID}: optimal management of parameter, model, and measurement uncertainty},
+  author={Galioto, Nicholas and Gorodetsky, Alex Arkady},
+  journal={Nonlinear Dynamics},
+  volume={102},
+  number={1},
+  pages={241--267},
+  year={2020},
+  publisher={Springer}
+}
+```
 
 ## Information
 Author: [Nick Galioto](https://scholar.google.com/citations?user=psGSgNoAAAAJ&hl=en&oi=sra)\
