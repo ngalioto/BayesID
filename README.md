@@ -36,9 +36,9 @@ If you found this repository useful, please consider citing it with the followin
 Galioto, Nicholas, and Alex Arkady Gorodetsky. "Bayesian system ID: optimal management of parameter, model, and measurement uncertainty." Nonlinear Dynamics 102.1 (2020): 241-267.
 
 <b>BibTeX:</b>
-```
+```bibtex
 @article{galioto2020bayesian,
-  title={{B}ayesian system {ID}: optimal management of parameter, model, and measurement uncertainty},
+  title={Bayesian system {ID}: optimal management of parameter, model, and measurement uncertainty},
   author={Galioto, Nicholas and Gorodetsky, Alex Arkady},
   journal={Nonlinear Dynamics},
   volume={102},
