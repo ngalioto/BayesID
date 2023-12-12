@@ -13,7 +13,7 @@ close all;
 load('whResults.mat');
 
 %% Get output estimates from samples
-fvec = @(x,u)simple_res_net([x;u.*ones(p,size(x,2))],theta_map(indF),n+p,n,num_nodes);
+fvec = @(x,u,theta)simple_res_net([x;u.*ones(p,size(x,2))],theta(indF),n+p,n,num_nodes);
 hvec = @(x,u)simple_res_net([x;u.*ones(p,size(x,2))],theta_map(indH),n+p,m,num_nodes);
 
 T_sim = T+1;
@@ -24,8 +24,8 @@ sample_step = (num_samples - burn_in) / num_plottedSamples;
 ysamples = zeros((num_samples - burn_in) / sample_step, T_sim);
 for ii = 1:(num_samples - burn_in) / sample_step
     sample_ii = samples(:,burn_in+ii*sample_step);
-    theta = [sample_ii([indx0,indF]); theta_map; sample_ii((indF(end)+1):end)];
-    ysamples(ii,:) = simulate(x0(theta).val,fvec,hvec,u_test,T_sim);
+    theta = [sample_ii([indx0,indF]); theta_map(indH); sample_ii((indH(end)+1):end)];
+    ysamples(ii,:) = simulate(x0(theta).val,@(x,u)fvec(x,u,theta),hvec,u_test,T_sim);
 end
 % Point estimate
 ymean = mean(ysamples*yscale+yshift);
