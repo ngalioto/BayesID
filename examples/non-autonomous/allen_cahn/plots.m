@@ -1,4 +1,6 @@
 addpath('../../../plotting');
+addpath('../../../utils');
+
 %% Plotting settings
 fontSize = 18; lineWidth = 1.5;
 plotSettings(fontSize, lineWidth)

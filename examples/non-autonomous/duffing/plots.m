@@ -1,4 +1,6 @@
 addpath('../../../plotting');
+addpath('../../../utils');
+
 %% Plotting settings
 sampleColor = [0.3010 0.7450 0.9330 0.05];
 mapColor = [0 0.4470 0.7410];
@@ -16,7 +18,7 @@ load('duffingResults.mat');
 T_sim = 2*T;
 burn_in = 5e5;
 num_samples = size(samples,2);
-num_plottedSamples = 50; % total number of samples to use
+num_plottedSamples = 1000; % total number of samples to use
 sample_step = (num_samples - burn_in) / num_plottedSamples; %subsampling interval
 ysamples = zeros(num_plottedSamples, T_sim);
 for i = 1:num_plottedSamples
@@ -77,4 +79,4 @@ plot(yms(1:end-1),yms(2:end),'Color',msColor);
 xlabel('$y(t)$');
 ylabel('$y(t+\Delta t)$');
 xlim([-2 2])
-ylim([-2 2])
+ylim([-2 2])    

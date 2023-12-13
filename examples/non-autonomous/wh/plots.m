@@ -1,4 +1,6 @@
 addpath('../../../plotting');
+addpath('../../../utils');
+
 %% Plotting settings
 fontSize = 18; lineWidth = 1.5;
 plotSettings(fontSize, lineWidth)
@@ -22,10 +24,11 @@ num_samples = size(samples,2);
 num_plottedSamples = 100; % total number of samples to use
 sample_step = (num_samples - burn_in) / num_plottedSamples;
 ysamples = zeros((num_samples - burn_in) / sample_step, T_sim);
-for ii = 1:(num_samples - burn_in) / sample_step
+parfor ii = 1:(num_samples - burn_in) / sample_step
     sample_ii = samples(:,burn_in+ii*sample_step);
     theta = [sample_ii([indx0,indF]); theta_map(indH); sample_ii((indH(end)+1):end)];
     ysamples(ii,:) = simulate(x0(theta).val,@(x,u)fvec(x,u,theta),hvec,u_test,T_sim);
+    ii
 end
 % Point estimate
 ymean = mean(ysamples*yscale+yshift);
