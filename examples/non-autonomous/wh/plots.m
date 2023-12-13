@@ -28,7 +28,6 @@ for ii = 1:(num_samples - burn_in) / sample_step
     sample_ii = samples(:,burn_in+ii*sample_step);
     theta = [sample_ii([indx0,indF]); theta_map(indH); sample_ii((indH(end)+1):end)];
     ysamples(ii,:) = simulate(x0(theta).val,@(x,u)fvec(x,u,theta),hvec,u_test,T_sim);
-    ii
 end
 % Point estimate
 ymean = mean(ysamples*yscale+yshift);
