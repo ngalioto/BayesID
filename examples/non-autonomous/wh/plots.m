@@ -11,7 +11,6 @@ true_color = [0 0 0];
 data_color = [0 0 0];
 
 close all;
-% load('WH_samples.mat')
 load('whResults.mat');
 
 %% Get output estimates from samples
@@ -26,7 +25,7 @@ sample_step = (num_samples - burn_in) / num_plottedSamples;
 ysamples = zeros((num_samples - burn_in) / sample_step, T_sim);
 for ii = 1:(num_samples - burn_in) / sample_step
     sample_ii = samples(:,burn_in+ii*sample_step);
-    theta = [sample_ii([indx0,indF]); theta_map(indH); sample_ii((indH(end)+1):end)];
+    theta = [sample_ii([indx0,indF]); theta_map(indH); sample_ii((indF(end)+1):end)];
     ysamples(ii,:) = simulate(x0(theta).val,@(x,u)fvec(x,u,theta),hvec,u_test,T_sim);
 end
 % Point estimate
@@ -94,7 +93,7 @@ legend([org,ms,avg],'Original', 'MS', 'Mean');
 
 function [freq,dB] = getPSD(y)
     ydft = fft(y);
-    ypsd = abs(ydft) / length(ydft);
+    ypsd = abs(ydft / length(ydft));
     ypsd = ypsd(1:length(ypsd)/2+1);
     freq = (0:length(ypsd)-1)/1e3;
     dB = 20*log10(ypsd);
